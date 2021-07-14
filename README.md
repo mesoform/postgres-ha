@@ -3,6 +3,9 @@
 ## Summary
 Postgres database image setup for HA replication with control over backups and WAL archiving to GCS and backup restoration functionality.
 
+## Semantic versioning 
+The way in which versioning is done in this repository and for the image labels which it creates is a little different to standard versioning format. The normal major and minor versions that you would expect are still major and minor versions but they are tracking the major and minor versions of Postgres upstream. The second part of the version system also is broken into two parts, again major and minor versions. These represent major and minor versions of the additional features added by Mesoform. You can expect them to behave in the normal way of major and minor versions, in that major versions could include breaking changes. For example `13.1-1.1` represents Postgres version 13.1 with Mesoform features version 1.1
+
 ## How to use
 Variables usage:
 
