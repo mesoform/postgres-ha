@@ -19,7 +19,8 @@ To create a MASTER instance as part of a PostgreSQL HA setup set the following v
       - PG_REP_USER=testrep                                     # replication username
       - PG_REP_PASSWORD_FILE=/run/secrets/db_replica_password   # docker secret with the postgres replica user password
       - HBA_ADDRESS=10.0.0.0/8   # Host name or IP address range to allow replication connections from the slave (Replication Host-Based Authentication)
-      
+      - SYNC_REPLICATION=true                                   # to set synchronous replication to standby servers; defaults to false if not set 
+
 To create a REPLICA instance as part of a PostgreSQL HA setup set the following variables (set PG_SLAVE to true):
 
       - PG_SLAVE=true                                           # set to true if this is the replica instance on a postgres HA cluster
@@ -50,7 +51,7 @@ Running a postgres HA cluster without implementing backups is not recommended an
 
 ## How to create a PostgreSQL HA cluster
 
-See the example in docker-compose-example.yml to create a PostgreSQL HA master/replica setup with control over backups and WAL archiving to GCS:
+See the example in docker-compose-example.yml to create a PostgreSQL HA master/replica setup with synchronous replication and control over backups and WAL archiving to GCS:
 
 ```
 version: "3.7"
@@ -76,6 +77,7 @@ services:
       - PG_REP_USER=testrep
       - PG_REP_PASSWORD_FILE=/run/secrets/db_replica_password
       - HBA_ADDRESS=10.0.0.0/8
+      - SYNC_REPLICATION=true
       - BACKUPS=true
       - STORAGE_BUCKET=gs://postgresql13/wal-g
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials

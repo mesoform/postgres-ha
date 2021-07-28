@@ -33,5 +33,11 @@ echo "Adding replication specific configuration"
   echo "max_wal_senders = 5"
   echo "wal_keep_size = 512"
   echo "hot_standby = on"
-  echo "synchronous_standby_names = '*'"
 } >>"$PGDATA"/postgresql.conf
+
+if [[ ${SYNC_REPLICATION^^} == TRUE ]]; then
+  echo "Adding synchronous replication specific configuration"
+  {
+    echo "synchronous_standby_names = '*'"
+  } >>"$PGDATA"/postgresql.conf
+fi
