@@ -78,7 +78,7 @@ services:
     deploy:
       placement:
         constraints:
-        - node.labels.type == secondary
+        - node.labels.type != primary
 
 networks:
   database: {}
