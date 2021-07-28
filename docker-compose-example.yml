@@ -21,6 +21,7 @@ services:
       - PG_REP_USER=testrep
       - PG_REP_PASSWORD_FILE=/run/secrets/db_replica_password
       - HBA_ADDRESS=10.0.0.0/8
+      - SYNC_REPLICATION=true
       - BACKUPS=true
       - STORAGE_BUCKET=gs://postgresql13/wal-g
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials
