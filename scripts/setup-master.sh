@@ -30,8 +30,8 @@ echo "Adding replication specific configuration"
   echo "wal_level = replica"
   echo "archive_mode = on"
   echo "archive_command = '${ARCHIVE_COMMAND}'"
-  echo "max_wal_senders = 5"
-  echo "wal_keep_size = 512"
+  echo "max_wal_senders = 10"
+  echo "wal_keep_size = 2048"
   echo "hot_standby = on"
 } >>"$PGDATA"/postgresql.conf
 
