@@ -1,4 +1,4 @@
-FROM golang:1.15-alpine AS builder
+FROM golang:1.15-alpine3.12 AS builder
 
 ENV WALG_VERSION=v0.2.19
 
