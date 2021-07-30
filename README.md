@@ -3,6 +3,9 @@
 ## Summary
 Postgres database image setup for HA replication with control over backups and WAL archiving to GCS and backup restoration functionality.
 
+## Semantic versioning 
+The way in which versioning is done in this repository and for the image labels which it creates is a little different to standard versioning format. The normal major and minor versions that you would expect are still major and minor versions but they are tracking the major and minor versions of Postgres upstream. The second part of the version system also is broken into two parts, again major and minor versions. These represent major and minor versions of the additional features added by Mesoform. You can expect them to behave in the normal way of major and minor versions, in that major versions could include breaking changes. For example `13.1-1.1` represents Postgres version 13.1 with Mesoform features version 1.1
+
 ## How to use
 Variables usage:
 
@@ -16,7 +19,8 @@ To create a MASTER instance as part of a PostgreSQL HA setup set the following v
       - PG_REP_USER=testrep                                     # replication username
       - PG_REP_PASSWORD_FILE=/run/secrets/db_replica_password   # docker secret with the postgres replica user password
       - HBA_ADDRESS=10.0.0.0/8   # Host name or IP address range to allow replication connections from the slave (Replication Host-Based Authentication)
-      
+      - SYNC_REPLICATION=true                                   # to set synchronous replication to standby servers; defaults to true if not set 
+
 To create a REPLICA instance as part of a PostgreSQL HA setup set the following variables (set PG_SLAVE to true):
 
       - PG_SLAVE=true                                           # set to true if this is the replica instance on a postgres HA cluster
@@ -47,7 +51,7 @@ Running a postgres HA cluster without implementing backups is not recommended an
 
 ## How to create a PostgreSQL HA cluster
 
-See the example in docker-compose-example.yml to create a PostgreSQL HA master/replica setup with control over backups and WAL archiving to GCS:
+See the example in docker-compose-example.yml to create a PostgreSQL HA master/replica setup with synchronous replication and control over backups and WAL archiving to GCS:
 
 ```
 version: "3.7"
@@ -73,6 +77,7 @@ services:
       - PG_REP_USER=testrep
       - PG_REP_PASSWORD_FILE=/run/secrets/db_replica_password
       - HBA_ADDRESS=10.0.0.0/8
+      - SYNC_REPLICATION=true
       - BACKUPS=true
       - STORAGE_BUCKET=gs://postgresql13/wal-g
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials
