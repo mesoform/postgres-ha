@@ -56,6 +56,8 @@ function init_postgres_conf() {
       sed -i "s/synchronous_standby_names =.*$//g" "$config_file"
       sed -i "s/restore_command =.*$//g" "$config_file"
       sed -i "s/recovery_target_time =.*$//g" "$config_file"
+      sed -i "s/max_replication_slots =.*$//g" "$config_file"
+      sed -i "s/wal_sender_timeout =.*$//g" "$config_file"
     fi
 }
 

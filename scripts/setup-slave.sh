@@ -12,12 +12,12 @@ chmod 0600 ~/.pgpass
 
 until ping -c 1 -W 1 "${PG_MASTER_HOST:?missing environment variable. PG_MASTER_HOST must be set}"; do
   echo "Waiting for master to ping..."
-  sleep 1s
+  sleep 5s
 done
 
-until pg_basebackup -h "${PG_MASTER_HOST}" -p "${PGPORT}" -D "${PGDATA}" -U "${PG_REP_USER}" -vP -W; do
+until pg_basebackup -h "${PG_MASTER_HOST}" -p "${PGPORT}" -D "${PGDATA}" -U "${PG_REP_USER}" -vP -W -X fetch -c fast -n -s 60; do
   echo "Waiting for master to connect..."
-  sleep 1s
+  sleep 5s
 done
 
 touch "${PGDATA}"/standby.signal
