@@ -1,4 +1,4 @@
-FROM golang:1.15-alpine3.12 AS builder
+FROM golang:1.15-alpine AS builder
 
 ENV WALG_VERSION=v0.2.19
 
@@ -15,7 +15,7 @@ RUN set -ex  \
      && install main/pg/wal-g / \
      && /wal-g --help
 
-FROM postgres:13.0-alpine
+FROM postgres:13.3-alpine
 
 RUN apk add --update iputils htop
 
