@@ -15,7 +15,7 @@ RUN set -ex  \
      && install main/pg/wal-g / \
      && /wal-g --help
 
-FROM postgres:alpine3.15
+FROM postgres:13.3-alpine
 
 RUN apk add --update iputils htop
 
