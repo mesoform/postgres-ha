@@ -17,7 +17,7 @@ RUN set -ex  \
 
 FROM postgres:13-alpine3.15
 
-RUN apk add --update iputils htop
+RUN apk add --update iputils htop busybox-suid
 
 # Copy compiled wal-g binary from builder
 COPY --from=builder /wal-g /usr/local/bin
@@ -38,6 +38,10 @@ RUN chmod -R 775 /usr/local/scripts
 # Add custom entrypoint
 COPY scripts/entrypoint.sh /
 RUN chmod +x /entrypoint.sh
+
+# Add cron permissions to postgres user
+RUN chown -R root:postgres /etc/crontabs/root
+RUN chmod g+rw /etc/crontabs/root
 
 #Healthcheck to make sure container is ready
 HEALTHCHECK CMD pg_isready -U $POSTGRES_USER -d $POSTGRES_DB || exit 1
