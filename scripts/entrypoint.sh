@@ -15,6 +15,7 @@ export STORAGE_BUCKET=$STORAGE_BUCKET
 export GCP_CREDENTIALS=$GCP_CREDENTIALS
 export RESTORE_BACKUP=${RESTORE_BACKUP:-false}
 export BACKUP_NAME=$BACKUP_NAME
+export BACKUP_SCHEDULE=$BACKUP_SCHEDULE
 
 
 if [[ ${PG_MASTER^^} == TRUE && ${PG_SLAVE^^} == TRUE ]]; then
@@ -34,6 +35,20 @@ if [[ ${RESTORE_BACKUP^^} == TRUE && -z ${BACKUP_NAME} ]]; then
   echo "To restore a backup from GCS a backup name is needed"
   exit 1
 fi
+
+function cron_schedule() {
+    if [[ ${BACKUP_SCHEDULE^^} == "HOURLY" ]]; then
+      mv /usr/local/scripts/postgres_backup /etc/periodic/hourly/
+    elif [[ ${BACKUP_SCHEDULE^^} == "DAILY" ]]; then
+      mv /usr/local/scripts/postgres_backup /etc/periodic/daily/
+    elif [[ ${BACKUP_SCHEDULE^^} == "WEEKLY" ]]; then
+      mv /usr/local/scripts/postgres_backup /etc/periodic/weekly/
+    elif [[ ${BACKUP_SCHEDULE^^} == "MONTHLY" ]]; then
+      mv /usr/local/scripts/postgres_backup /etc/periodic/monthly/
+    else
+      echo "BACKUP_SCHEDULE is not set to an allowed value. Allowed values are: HOURLY, DAILY, WEEKLY or MONTHLY"
+    fi
+}
 
 function take_base_backup() {
     docker_setup_env
@@ -162,6 +177,7 @@ if [[ $1 == postgres ]]; then
     [[ ${BACKUPS^^} == TRUE ]] && init_walg_conf
     setup_master_db
     [[ ${BACKUPS^^} == TRUE ]] && take_base_backup
+    [[ ! -z ${BACKUP_SCHEDULE^^} ]] && cron_schedule
     unset PGPASSWORD
   fi
   echo "Running main postgres entrypoint"

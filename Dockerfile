@@ -15,7 +15,7 @@ RUN set -ex  \
      && install main/pg/wal-g / \
      && /wal-g --help
 
-FROM postgres:13-alpine
+FROM postgres:13-alpine3.15
 
 RUN apk add --update iputils htop
 
@@ -32,6 +32,7 @@ RUN chmod -R 775 /docker-entrypoint-initdb.d
 # Add WAL-G backup script
 COPY scripts/walg_caller.sh /usr/local/scripts/
 COPY scripts/base_backup.sh /usr/local/scripts/
+COPY scripts/postgres_backup /usr/local/scripts/
 RUN chown -R root:postgres /usr/local/scripts
 RUN chmod -R 775 /usr/local/scripts
 
