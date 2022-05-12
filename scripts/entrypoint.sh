@@ -36,6 +36,11 @@ if [[ ${RESTORE_BACKUP^^} == TRUE && -z ${BACKUP_NAME} ]]; then
   exit 1
 fi
 
+if [[ ! -z ${CRON_SCHEDULE}  ]]; then
+  echo "Starting cron job scheduler" && crond
+  echo "Database backups will be scheduled to run at ${CRON_SCHEDULE}. Check https://crontab.guru/ for schedule expression details"
+fi
+
 function cron_schedule() {
     CRON_CONFIGURATION="${CRON_SCHEDULE} /usr/local/scripts/base_backup.sh >> /var/log/pg-backups.log"
     echo "${CRON_CONFIGURATION}" >> /etc/crontabs/root
@@ -111,7 +116,7 @@ function init_walg_conf() {
     sed -i 's@STORAGEBUCKET@'"$STORAGE_BUCKET"'@' $backup_file
     sed -i 's@POSTGRESUSER@'"$POSTGRES_USER"'@' $backup_file
     sed -i 's@POSTGRESDB@'"$POSTGRES_DB"'@' $backup_file
-    HOSTNAMEDATE="$(hostname)-$(date +"%d%m%Y")"
+    HOSTNAMEDATE="$(date +"%Y%m%d%H%M%S")-$(hostname)"
     sed -i 's@CONTAINERDATE@'"$HOSTNAMEDATE"'@' $backup_file
 }
 
