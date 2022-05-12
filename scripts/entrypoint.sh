@@ -15,7 +15,7 @@ export STORAGE_BUCKET=$STORAGE_BUCKET
 export GCP_CREDENTIALS=$GCP_CREDENTIALS
 export RESTORE_BACKUP=${RESTORE_BACKUP:-false}
 export BACKUP_NAME=$BACKUP_NAME
-export BACKUP_SCHEDULE=$BACKUP_SCHEDULE
+export CRON_SCHEDULE=$CRON_SCHEDULE
 
 
 if [[ ${PG_MASTER^^} == TRUE && ${PG_SLAVE^^} == TRUE ]]; then
@@ -36,18 +36,14 @@ if [[ ${RESTORE_BACKUP^^} == TRUE && -z ${BACKUP_NAME} ]]; then
   exit 1
 fi
 
+if [[ ${BACKUPS^^} == TRUE ]] && [[ ! -z ${CRON_SCHEDULE}  ]] && [[ $(id -u) == 0 ]]; then
+  echo "Starting cron job scheduler" && crond
+  echo "Database backups will be scheduled to run at ${CRON_SCHEDULE}. Check https://crontab.guru/ for schedule expression details"
+fi
+
 function cron_schedule() {
-    if [[ ${BACKUP_SCHEDULE^^} == "HOURLY" ]]; then
-      mv /usr/local/scripts/postgres_backup /etc/periodic/hourly/
-    elif [[ ${BACKUP_SCHEDULE^^} == "DAILY" ]]; then
-      mv /usr/local/scripts/postgres_backup /etc/periodic/daily/
-    elif [[ ${BACKUP_SCHEDULE^^} == "WEEKLY" ]]; then
-      mv /usr/local/scripts/postgres_backup /etc/periodic/weekly/
-    elif [[ ${BACKUP_SCHEDULE^^} == "MONTHLY" ]]; then
-      mv /usr/local/scripts/postgres_backup /etc/periodic/monthly/
-    else
-      echo "BACKUP_SCHEDULE is not set to an allowed value. Allowed values are: HOURLY, DAILY, WEEKLY or MONTHLY"
-    fi
+    CRON_CONFIGURATION="${CRON_SCHEDULE} /usr/local/scripts/base_backup.sh >> /var/log/pg-backups.log"
+    echo "${CRON_CONFIGURATION}" >> /etc/crontabs/root
 }
 
 function take_base_backup() {
@@ -120,7 +116,7 @@ function init_walg_conf() {
     sed -i 's@STORAGEBUCKET@'"$STORAGE_BUCKET"'@' $backup_file
     sed -i 's@POSTGRESUSER@'"$POSTGRES_USER"'@' $backup_file
     sed -i 's@POSTGRESDB@'"$POSTGRES_DB"'@' $backup_file
-    HOSTNAMEDATE="$(hostname)-$(date +"%d%m%Y")"
+    HOSTNAMEDATE="$(date +"%Y%m%d%H%M%S")-$(hostname)"
     sed -i 's@CONTAINERDATE@'"$HOSTNAMEDATE"'@' $backup_file
 }
 
@@ -177,7 +173,7 @@ if [[ $1 == postgres ]]; then
     [[ ${BACKUPS^^} == TRUE ]] && init_walg_conf
     setup_master_db
     [[ ${BACKUPS^^} == TRUE ]] && take_base_backup
-    [[ ! -z ${BACKUP_SCHEDULE^^} ]] && cron_schedule
+    [[ ! -z ${CRON_SCHEDULE} ]] && cron_schedule
     unset PGPASSWORD
   fi
   echo "Running main postgres entrypoint"
