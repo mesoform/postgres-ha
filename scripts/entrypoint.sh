@@ -36,7 +36,7 @@ if [[ ${RESTORE_BACKUP^^} == TRUE && -z ${BACKUP_NAME} ]]; then
   exit 1
 fi
 
-if [[ ! -z ${CRON_SCHEDULE}  ]]; then
+if [[ ! -z ${CRON_SCHEDULE}  ]] && [[ $(id -u) == 0 ]]; then
   echo "Starting cron job scheduler" && crond
   echo "Database backups will be scheduled to run at ${CRON_SCHEDULE}. Check https://crontab.guru/ for schedule expression details"
 fi
