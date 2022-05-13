@@ -15,8 +15,8 @@ export STORAGE_BUCKET=$STORAGE_BUCKET
 export GCP_CREDENTIALS=$GCP_CREDENTIALS
 export RESTORE_BACKUP=${RESTORE_BACKUP:-false}
 export BACKUP_NAME=$BACKUP_NAME
-export CRON_SCHEDULE=$CRON_SCHEDULE
-
+export FULL_BACKUP_SCHEDULE=$FULL_BACKUP_SCHEDULE
+export CRONITOR_KEY=$CRONITOR_KEY
 
 if [[ ${PG_MASTER^^} == TRUE && ${PG_SLAVE^^} == TRUE ]]; then
   echo "Both \$PG_MASTER and \$PG_SLAVE cannot be true"
@@ -36,14 +36,9 @@ if [[ ${RESTORE_BACKUP^^} == TRUE && -z ${BACKUP_NAME} ]]; then
   exit 1
 fi
 
-if [[ ${BACKUPS^^} == TRUE ]] && [[ ! -z ${CRON_SCHEDULE}  ]] && [[ $(id -u) == 0 ]]; then
-  echo "Starting cron job scheduler" && crond
-  echo "Database backups will be scheduled to run at ${CRON_SCHEDULE}. Check https://crontab.guru/ for schedule expression details"
-fi
-
-function cron_schedule() {
-    CRON_CONFIGURATION="${CRON_SCHEDULE} /usr/local/scripts/base_backup.sh >> /var/log/pg-backups.log"
-    echo "${CRON_CONFIGURATION}" >> /etc/crontabs/root
+function backup_cron_schedule() {
+    CRON_CONFIGURATION="${FULL_BACKUP_SCHEDULE} /usr/local/scripts/base_backup.sh | tee /var/log/cron-pg-backups.log"
+    echo "" > /etc/crontabs/root && echo "${CRON_CONFIGURATION}" >> /etc/crontabs/root
 }
 
 function take_base_backup() {
@@ -150,6 +145,19 @@ function restore_backup() {
     docker_temp_server_stop
 }
 
+if [[ ${BACKUPS^^} == TRUE ]] && [[ ! -z ${FULL_BACKUP_SCHEDULE}  ]] && [[ $(id -u) == 0 ]]; then
+  echo "Starting cron job scheduler" && crond
+  echo "Database backups will be scheduled to run at ${FULL_BACKUP_SCHEDULE}. Check https://crontab.guru/ for schedule expression details"
+  backup_cron_schedule
+  if [[ ! -z ${CRONITOR_KEY} ]]; then
+    echo "Installing and configuring cronitor. Check https://cronitor.io/cron-job-monitoring to see jobs monitoring"
+    curl -sOL https://cronitor.io/dl/linux_amd64.tar.gz
+    tar xvf linux_amd64.tar.gz -C /usr/bin/
+    cronitor configure --api-key ${CRONITOR_KEY}
+    yes "${POSTGRES_DB} DB Full Backup" | cronitor discover
+  fi
+fi
+
 if [[ $(id -u) == 0 ]]; then
   # then restart script as postgres user
   # shellcheck disable=SC2128
@@ -173,7 +181,6 @@ if [[ $1 == postgres ]]; then
     [[ ${BACKUPS^^} == TRUE ]] && init_walg_conf
     setup_master_db
     [[ ${BACKUPS^^} == TRUE ]] && take_base_backup
-    [[ ! -z ${CRON_SCHEDULE} ]] && cron_schedule
     unset PGPASSWORD
   fi
   echo "Running main postgres entrypoint"
