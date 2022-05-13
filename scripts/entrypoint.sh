@@ -40,7 +40,7 @@ if [[ ${BACKUPS^^} == TRUE ]] && [[ ! -z ${FULL_BACKUP_SCHEDULE}  ]] && [[ $(id 
   echo "Starting cron job scheduler" && crond
   echo "Database backups will be scheduled to run at ${FULL_BACKUP_SCHEDULE}. Check https://crontab.guru/ for schedule expression details"
   backup_cron_schedule
-  if [[ ! -z ${CRONITOR_KEY} ]]
+  if [[ ! -z ${CRONITOR_KEY} ]]; then
     curl -sOL https://cronitor.io/dl/linux_amd64.tar.gz
     tar xvf linux_amd64.tar.gz -C /usr/bin/
     cronitor configure --api-key ${CRONITOR_KEY}
