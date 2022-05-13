@@ -38,7 +38,7 @@ fi
 
 function backup_cron_schedule() {
     CRON_CONFIGURATION="${FULL_BACKUP_SCHEDULE} /usr/local/scripts/base_backup.sh | tee /var/log/cron-pg-backups.log"
-    echo "${CRON_CONFIGURATION}" >> /etc/crontabs/root
+    echo "" > /etc/crontabs/root && echo "${CRON_CONFIGURATION}" >> /etc/crontabs/root
 }
 
 function take_base_backup() {
@@ -150,6 +150,7 @@ if [[ ${BACKUPS^^} == TRUE ]] && [[ ! -z ${FULL_BACKUP_SCHEDULE}  ]] && [[ $(id 
   echo "Database backups will be scheduled to run at ${FULL_BACKUP_SCHEDULE}. Check https://crontab.guru/ for schedule expression details"
   backup_cron_schedule
   if [[ ! -z ${CRONITOR_KEY} ]]; then
+    echo "Installing and configuring cronitor. Check https://cronitor.io/cron-job-monitoring to see jobs monitoring"
     curl -sOL https://cronitor.io/dl/linux_amd64.tar.gz
     tar xvf linux_amd64.tar.gz -C /usr/bin/
     cronitor configure --api-key ${CRONITOR_KEY}
