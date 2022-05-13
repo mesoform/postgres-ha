@@ -17,7 +17,7 @@ RUN set -ex  \
 
 FROM postgres:13-alpine3.15
 
-RUN apk add --update iputils htop busybox-suid
+RUN apk add --update iputils htop curl busybox-suid
 
 # Copy compiled wal-g binary from builder
 COPY --from=builder /wal-g /usr/local/bin

@@ -36,18 +36,6 @@ if [[ ${RESTORE_BACKUP^^} == TRUE && -z ${BACKUP_NAME} ]]; then
   exit 1
 fi
 
-if [[ ${BACKUPS^^} == TRUE ]] && [[ ! -z ${FULL_BACKUP_SCHEDULE}  ]] && [[ $(id -u) == 0 ]]; then
-  echo "Starting cron job scheduler" && crond
-  echo "Database backups will be scheduled to run at ${FULL_BACKUP_SCHEDULE}. Check https://crontab.guru/ for schedule expression details"
-  backup_cron_schedule
-  if [[ ! -z ${CRONITOR_KEY} ]]; then
-    curl -sOL https://cronitor.io/dl/linux_amd64.tar.gz
-    tar xvf linux_amd64.tar.gz -C /usr/bin/
-    cronitor configure --api-key ${CRONITOR_KEY}
-    yes "${POSTGRES_DB} DB Full Backup" | cronitor discover
-  fi
-fi
-
 function backup_cron_schedule() {
     CRON_CONFIGURATION="${FULL_BACKUP_SCHEDULE} /usr/local/scripts/base_backup.sh | tee /var/log/cron-pg-backups.log"
     echo "${CRON_CONFIGURATION}" >> /etc/crontabs/root
@@ -156,6 +144,18 @@ function restore_backup() {
     while [[ -f "${PGDATA}"/recovery.signal ]]; do sleep 2 && echo "."; done
     docker_temp_server_stop
 }
+
+if [[ ${BACKUPS^^} == TRUE ]] && [[ ! -z ${FULL_BACKUP_SCHEDULE}  ]] && [[ $(id -u) == 0 ]]; then
+  echo "Starting cron job scheduler" && crond
+  echo "Database backups will be scheduled to run at ${FULL_BACKUP_SCHEDULE}. Check https://crontab.guru/ for schedule expression details"
+  backup_cron_schedule
+  if [[ ! -z ${CRONITOR_KEY} ]]; then
+    curl -sOL https://cronitor.io/dl/linux_amd64.tar.gz
+    tar xvf linux_amd64.tar.gz -C /usr/bin/
+    cronitor configure --api-key ${CRONITOR_KEY}
+    yes "${POSTGRES_DB} DB Full Backup" | cronitor discover
+  fi
+fi
 
 if [[ $(id -u) == 0 ]]; then
   # then restart script as postgres user
