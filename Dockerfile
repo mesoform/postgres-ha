@@ -17,7 +17,9 @@ RUN set -ex  \
 
 FROM postgres:13-alpine3.15
 
-RUN apk add --update iputils htop curl busybox-suid
+RUN apk add --update iputils htop curl busybox-suid \
+    && curl -sOL https://cronitor.io/dl/linux_amd64.tar.gz \
+    && tar xvf linux_amd64.tar.gz -C /usr/bin/
 
 # Copy compiled wal-g binary from builder
 COPY --from=builder /wal-g /usr/local/bin
