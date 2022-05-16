@@ -37,7 +37,7 @@ if [[ ${RESTORE_BACKUP^^} == TRUE && -z ${BACKUP_NAME} ]]; then
 fi
 
 function backup_cron_schedule() {
-    CRON_CONFIGURATION="${FULL_BACKUP_SCHEDULE} /usr/local/scripts/base_backup.sh | tee /var/log/cron-pg-backups.log"
+    CRON_CONFIGURATION="${FULL_BACKUP_SCHEDULE} /usr/local/scripts/base_backup.sh | tee -a /var/log/cron-pg-backups.log"
     echo "" > /etc/crontabs/root && echo "${CRON_CONFIGURATION}" >> /etc/crontabs/root
 }
 

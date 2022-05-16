@@ -45,8 +45,8 @@ To run backups and WAL archiving to GCS (Google Cloud Storage) set the following
       - BACKUPS=true                                            # switch to implement backups; defaults to false
       - STORAGE_BUCKET=gs://postgresql13/wal-g                  # to specify the GCS bucket
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials            # to specify the docker secret with the service account key that has access to the GCS bucket
-      - FULL_BACKUP_SCHEDULE:* * * * *                                 # to specify the cron schedule expression at which backups will run (if not set only the first initial base backup will be ran) \
-                                                                # check https://crontab.guru/ for schedule expression details. (e.g.: 00 00 * * * -> to run a daily backup at midnight)"
+      - FULL_BACKUP_SCHEDULE=* * * * *                          # to specify the cron schedule expression at which backups will run (if not set only the first initial base backup will be ran) \
+                                                                # L-> check https://crontab.guru/ for schedule expression details. (e.g.: 00 00 * * * -> to run a daily backup at midnight)"
       - CRONITOR_KEY=1a2b3cd4e56789f1234gh5ijkl67m890           # to specify cronitor API key for cron job monitoring. check https://cronitor.io/cron-job-monitoring for details   
 
 Note: HA MASTER instances with BACKUPS disabled will only store WAL logs locally on the `pg_wal` folder under the PGDATA directory path. 
