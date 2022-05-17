@@ -151,7 +151,7 @@ if [[ ${BACKUPS^^} == TRUE ]] && [[ ! -z ${FULL_BACKUP_SCHEDULE}  ]] && [[ $(id 
   backup_cron_schedule
   if [[ ! -z ${CRONITOR_KEY} ]]; then
     echo "Configuring cronitor. Check https://cronitor.io/cron-job-monitoring to see jobs monitoring"
-    cronitor configure --api-key ${CRONITOR_KEY}
+    cronitor configure --api-key ${CRONITOR_KEY} > /dev/null
     yes "${POSTGRES_DB} DB Full Backup" | cronitor discover
   fi
 fi
