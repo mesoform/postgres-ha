@@ -492,5 +492,7 @@ mfdk34jll34k        testapp_app.1          testapp/testapp-prod:1.0.0           
 
 ## Official stuff
 
-- [Contributing](https://github.com/mesoform/terraform-infrastructure-modules/blob/main/CONTRIBUTING.md)
-- [Licence](https://github.com/mesoform/terraform-infrastructure-modules/blob/main/LICENSE)
+- [Contributing](https://github.com/mesoform/documentation/blob/main/CONTRIBUTING.md)
+- [Code of Conduct](https://github.com/mesoform/documentation/blob/main/CODE_OF_CONDUCT.md)
+- [Licence](https://github.com/mesoform/postgres-ha/blob/main/LICENSE)
+- [Contact](https://mesoform.com/contact)
