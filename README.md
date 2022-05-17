@@ -45,6 +45,9 @@ To run backups and WAL archiving to GCS (Google Cloud Storage) set the following
       - BACKUPS=true                                            # switch to implement backups; defaults to false
       - STORAGE_BUCKET=gs://postgresql13/wal-g                  # to specify the GCS bucket
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials            # to specify the docker secret with the service account key that has access to the GCS bucket
+      - FULL_BACKUP_SCHEDULE=* * * * *                          # to specify the cron schedule expression at which backups will run (if not set only the first initial base backup will be ran) \
+                                                                # L-> check https://crontab.guru/ for schedule expression details. (e.g.: 00 00 * * * -> to run a daily backup at midnight)"
+      - CRONITOR_KEY=1a2b3cd4e56789f1234gh5ijkl67m890           # to specify cronitor API key for cron job monitoring. check https://cronitor.io/cron-job-monitoring for details   
 
 Note: HA MASTER instances with BACKUPS disabled will only store WAL logs locally on the `pg_wal` folder under the PGDATA directory path. 
 Running a postgres HA cluster without implementing backups is not recommended and is intended only for testing purposes.
@@ -81,6 +84,7 @@ services:
       - BACKUPS=true
       - STORAGE_BUCKET=gs://postgresql13/wal-g
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials
+      - FULL_BACKUP_SCHEDULE:00 00 * * *
     ports:
       - "5432:5432"
     secrets:
@@ -155,7 +159,7 @@ docker stack deploy -c docker-compose-example.yml test_pg13ha
 To restore a backup from GCS (Google Cloud Storage) also set the following variables on the docker compose file along with the backups ones (backups can be restored on a MASTER or STANDALONE instance):
 
       - RESTORE_BACKUP=true                                     # set to true
-      - BACKUP_NAME=ab123c4d56e7-28012021                       # to specify the name of the GCS backup to be restored (the name corresponds to the <container-id>-<date> -i.e: where/when- the backup was taken)
+      - BACKUP_NAME=20220512154510-12abc3d4e5f                  # to specify the name of the GCS backup to be restored (the name corresponds to the <date>-<container-id> -i.e: when/where- the backup was taken)
       - STORAGE_BUCKET=gs://postgresql13/wal-g                  # to specify the GCS bucket backup location
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials            # to specify the docker secret with the service account key that has access to the GCS bucket
 
@@ -163,8 +167,8 @@ The LATEST base backup available will be restored and all existing WAL archives 
 
 ####Case example:
 
-A database container `ab123c4d56e7` was created on `28012021` and backups were pushed to GCS bucket `gs://postgresql13/wal-g`
-The created backup named `ab123c4d56e7-28012021` can be restored from the specified GCS bucket name.
+A database container `12abc3d4e5` was created on `20220512154510` (date format "%Y%m%d%H%M%S") and backups were pushed to GCS bucket `gs://postgresql13/wal-g`
+The created backup named `20220512154510-12abc3d4e5` can be restored from the specified GCS bucket name.
 
 See the example below where the restore parameters RESTORE_BACKUP and BACKUP_NAME have been added to the master database on the `docker-compose-example.yml` file:
 
@@ -196,7 +200,7 @@ services:
       - STORAGE_BUCKET=gs://postgresql13/wal-g
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials
       - RESTORE_BACKUP=true
-      - BACKUP_NAME=ab123c4d56e7-28012021
+      - BACKUP_NAME=20220512154510-12abc3d4e5
     ports:
       - "5432:5432"
     secrets:
@@ -273,9 +277,9 @@ Using password file
 Detected running as root user, changing to postgres
 Using password file
 Initialising wal-g restore script variables
-Restoring backup ab123c4d56e7-28012021
+Restoring backup 20220512154510-12abc3d4e5
 GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/gcp_credentials
-WALG_GS_PREFIX: gs://postgresql13/wal-g/ab123c4d56e7-28012021
+WALG_GS_PREFIX: gs://postgresql13/wal-g/20220512154510-12abc3d4e5
 PGUSER: testuser
 PGDATABASE: testdb
 PGPORT: 5432
