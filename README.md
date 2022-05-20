@@ -18,7 +18,7 @@ To create a MASTER instance as part of a PostgreSQL HA setup set the following v
       - PGPORT=5432                                             # master database port; defaults to 5432 if not set
       - PG_REP_USER=testrep                                     # replication username
       - PG_REP_PASSWORD_FILE=/run/secrets/db_replica_password   # docker secret with the postgres replica user password
-      - HBA_ADDRESS=10.0.0.0/8   # Host name or IP address range to allow replication connections from the slave (Replication Host-Based Authentication)
+      - HBA_ADDRESS=10.0.0.0/8                                  # Host name or IP address range to allow replication connections from the slave (Replication Host-Based Authentication)
       - SYNC_REPLICATION=true                                   # to set synchronous replication to standby servers; defaults to true if not set 
 
 To create a REPLICA instance as part of a PostgreSQL HA setup set the following variables (set PG_SLAVE to true):
@@ -30,8 +30,8 @@ To create a REPLICA instance as part of a PostgreSQL HA setup set the following 
       - PGPORT=5432                                             # master database port; defaults to 5432 if not set      
       - PG_REP_USER=testrep                                     # replication username
       - PG_REP_PASSWORD_FILE=/run/secrets/db_replica_password   # docker secret with the postgres replica user password
-      - PG_MASTER_HOST=pg_master # pg_master service name or swarm node private IP where the pg_master service is running
-      - HBA_ADDRESS=10.0.0.0/8   # Host name or IP address range to allow replication connections from the master (Replication Host-Based Authentication)
+      - PG_MASTER_HOST=pg_master                                # pg_master service name or swarm node private IP where the pg_master service is running
+      - HBA_ADDRESS=10.0.0.0/8                                  # Host name or IP address range to allow replication connections from the master (Replication Host-Based Authentication)
 
 To create a standalone PostgreSQL instance set only the following variables (PG_MASTER or PG_SLAVE vars should not be set):
 
@@ -43,7 +43,7 @@ To create a standalone PostgreSQL instance set only the following variables (PG_
 To run backups and WAL archiving to GCS (Google Cloud Storage) set the following variables (backups will be taken on a MASTER or STANDALONE instance):
 
       - BACKUPS=true                                            # switch to implement backups; defaults to false
-      - STORAGE_BUCKET=gs://postgresql13/wal-g                  # to specify the GCS bucket
+      - STORAGE_BUCKET=gs://postgresql/backups                  # to specify the GCS bucket
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials            # to specify the docker secret with the service account key that has access to the GCS bucket
       - FULL_BACKUP_SCHEDULE=* * * * *                          # to specify the cron schedule expression at which backups will run (if not set only the first initial base backup will be ran) \
                                                                 # L-> check https://crontab.guru/ for schedule expression details. (e.g.: 00 00 * * * -> to run a daily backup at midnight)"
@@ -82,7 +82,7 @@ services:
       - HBA_ADDRESS=10.0.0.0/8
       - SYNC_REPLICATION=true
       - BACKUPS=true
-      - STORAGE_BUCKET=gs://postgresql13/wal-g
+      - STORAGE_BUCKET=gs://postgresql/backups
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials
       - FULL_BACKUP_SCHEDULE:00 00 * * *
     ports:
@@ -160,14 +160,16 @@ To restore a backup from GCS (Google Cloud Storage) also set the following varia
 
       - RESTORE_BACKUP=true                                     # set to true
       - BACKUP_NAME=20220512154510-12abc3d4e5f                  # to specify the name of the GCS backup to be restored (the name corresponds to the <date>-<container-id> -i.e: when/where- the backup was taken)
-      - STORAGE_BUCKET=gs://postgresql13/wal-g                  # to specify the GCS bucket backup location
+      - STORAGE_BUCKET=gs://postgresql/backups                  # to specify the GCS bucket backup location
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials            # to specify the docker secret with the service account key that has access to the GCS bucket
 
-The LATEST base backup available will be restored and all existing WAL archives will be applied to it.
+The LATEST base backup available from the specified BACKUP_NAME will be restored and all existing WAL archives will be applied to it.
+
+Note: A restore won't be performed unless the database data directory $PGDATA (common location being /var/lib/pgsql/data) is empty, otherwise RESTORE_BACKUP will be set to false.
 
 ####Case example:
 
-A database container `12abc3d4e5` was created on `20220512154510` (date format "%Y%m%d%H%M%S") and backups were pushed to GCS bucket `gs://postgresql13/wal-g`
+A database container `12abc3d4e5` was created on `20220512154510` (date format "%Y%m%d%H%M%S") and backups were pushed to GCS bucket `gs://postgresql/backups`
 The created backup named `20220512154510-12abc3d4e5` can be restored from the specified GCS bucket name.
 
 See the example below where the restore parameters RESTORE_BACKUP and BACKUP_NAME have been added to the master database on the `docker-compose-example.yml` file:
@@ -197,7 +199,7 @@ services:
       - PG_REP_PASSWORD_FILE=/run/secrets/db_replica_password
       - HBA_ADDRESS=10.0.0.0/8
       - BACKUPS=true
-      - STORAGE_BUCKET=gs://postgresql13/wal-g
+      - STORAGE_BUCKET=gs://postgresql/backups
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials
       - RESTORE_BACKUP=true
       - BACKUP_NAME=20220512154510-12abc3d4e5
@@ -279,7 +281,7 @@ Using password file
 Initialising wal-g restore script variables
 Restoring backup 20220512154510-12abc3d4e5
 GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/gcp_credentials
-WALG_GS_PREFIX: gs://postgresql13/wal-g/20220512154510-12abc3d4e5
+WALG_GS_PREFIX: gs://postgresql/backups/20220512154510-12abc3d4e5
 PGUSER: testuser
 PGDATABASE: testdb
 PGPORT: 5432
