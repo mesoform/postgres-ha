@@ -36,6 +36,12 @@ if [[ ${RESTORE_BACKUP^^} == TRUE && -z ${BACKUP_NAME} ]]; then
   exit 1
 fi
 
+if [[ ${RESTORE_BACKUP^^} == TRUE ]] && [[ $( ls -A "$PGDATA" ) ]]; then
+  echo "${PGDATA} must be empty to restore from backup"
+  echo "Initialisation will continue without backup restoration"
+  export RESTORE_BACKUP=false
+fi
+
 function backup_cron_schedule() {
     CRON_CONFIGURATION="${FULL_BACKUP_SCHEDULE} /usr/local/scripts/base_backup.sh | tee -a /var/log/cron-pg-backups.log"
     echo "" > /etc/crontabs/root && echo "${CRON_CONFIGURATION}" >> /etc/crontabs/root
