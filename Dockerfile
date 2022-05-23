@@ -45,9 +45,6 @@ RUN chmod +x /entrypoint.sh
 RUN chown -R root:postgres /etc/crontabs/root
 RUN chmod g+rw /etc/crontabs/root
 
-#Healthcheck to make sure container is ready
-HEALTHCHECK CMD pg_isready -U $POSTGRES_USER -d $POSTGRES_DB || exit 1
-
 ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
 CMD ["postgres"]
 
