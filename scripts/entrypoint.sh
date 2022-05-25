@@ -2,6 +2,7 @@
 
 export POSTGRES_USER=$POSTGRES_USER
 export POSTGRES_DB=$POSTGRES_DB
+export POSTGRES_PASSWORD_FILE=${POSTGRES_PASSWORD_FILE:-${PG_PASSWORD_FILE}}
 export PGPORT=${PGPORT:-5432}
 export PG_MASTER=${PG_MASTER:-false}
 export PG_SLAVE=${PG_SLAVE:-false}
@@ -34,6 +35,12 @@ fi
 if [[ ${RESTORE_BACKUP^^} == TRUE && -z ${BACKUP_NAME} ]]; then
   echo "To restore a backup from GCS a backup name is needed"
   exit 1
+fi
+
+if [[ ${RESTORE_BACKUP^^} == TRUE ]] && [[ $( ls -A "$PGDATA" ) ]]; then
+  echo "${PGDATA} must be empty to restore from backup"
+  echo "Initialisation will continue without backup restoration"
+  export RESTORE_BACKUP=false
 fi
 
 function backup_cron_schedule() {

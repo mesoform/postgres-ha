@@ -23,8 +23,9 @@ services:
       - HBA_ADDRESS=10.0.0.0/8
       - SYNC_REPLICATION=true
       - BACKUPS=true
-      - STORAGE_BUCKET=gs://postgresql13/wal-g
+      - STORAGE_BUCKET=gs://postgresql/backups
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials
+      - FULL_BACKUP_SCHEDULE=00 00 * * *
     ports:
       - "5432:5432"
     secrets:
