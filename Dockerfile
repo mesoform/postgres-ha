@@ -15,7 +15,7 @@ RUN set -ex  \
      && install main/pg/wal-g / \
      && /wal-g --help
 
-FROM postgres:13-alpine3.15
+FROM postgres:14.2-alpine3.15
 
 RUN apk add --update iputils htop curl busybox-suid \
     && curl -sOL https://cronitor.io/dl/linux_amd64.tar.gz \
@@ -44,9 +44,6 @@ RUN chmod +x /entrypoint.sh
 # Add cron permissions to postgres user
 RUN chown -R root:postgres /etc/crontabs/root
 RUN chmod g+rw /etc/crontabs/root
-
-#Healthcheck to make sure container is ready
-HEALTHCHECK CMD pg_isready -U $POSTGRES_USER -d $POSTGRES_DB || exit 1
 
 ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
 CMD ["postgres"]
