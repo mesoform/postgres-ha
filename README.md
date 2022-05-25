@@ -108,6 +108,12 @@ services:
       placement:
         constraints:
         - node.labels.type == primary
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "zabbix"]
+      interval: 3800s
+      timeout: 60s
+      retries: 3
+      start_period: 60s        
   pg_replica:
     image: mesoform/postgres-ha:13-latest
     volumes:
@@ -139,6 +145,12 @@ services:
       placement:
         constraints:
         - node.labels.type == secondary
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "zabbix"]
+      interval: 3800s
+      timeout: 60s
+      retries: 3
+      start_period: 60s
 
 networks:
   database: {}
@@ -153,6 +165,8 @@ Run with:
 ```shell script
 docker stack deploy -c docker-compose-example.yml test_pg13ha
 ```
+
+Note: Healthchecks can be added as in the example to avoid processes like backup restoration or database replication from being terminated too early before they complete
 
 ## How to restore from a backup
 
@@ -226,6 +240,12 @@ services:
       placement:
         constraints:
         - node.labels.type == primary
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "zabbix"]
+      interval: 3800s
+      timeout: 60s
+      retries: 3
+      start_period: 60s        
   pg_replica:
     image: mesoform/postgres-ha:13-latest
     volumes:
@@ -257,6 +277,12 @@ services:
       placement:
         constraints:
         - node.labels.type == secondary
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "zabbix"]
+      interval: 3800s
+      timeout: 60s
+      retries: 3
+      start_period: 60s
 
 networks:
   database: {}
