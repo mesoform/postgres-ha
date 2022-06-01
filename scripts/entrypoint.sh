@@ -95,7 +95,7 @@ function setup_master_db() {
     init_postgres_conf
     if [[ ${PG_MASTER^^} == TRUE ]]; then
       echo "Setting up replication on master instance"
-      docker_process_init_files /docker-entrypoint-initdb.d/*
+      docker_process_init_files /docker-entrypoint-initdb.d/setup-master.sh
     elif [[ ${BACKUPS^^} == TRUE ]]; then
       echo "Setting up standalone PostgreSQL instance with WAL archiving"
       {
