@@ -17,7 +17,8 @@ export GCP_CREDENTIALS=$GCP_CREDENTIALS
 export RESTORE_BACKUP=${RESTORE_BACKUP:-false}
 export BACKUP_NAME=$BACKUP_NAME
 export FULL_BACKUP_SCHEDULE=$FULL_BACKUP_SCHEDULE
-export CRONITOR_KEY=$CRONITOR_KEY
+export CRONITOR_KEY_FILE=$CRONITOR_KEY_FILE
+export CRONITOR_ENV=${CRONITOR_ENV:-PROD}
 
 if [[ ${PG_MASTER^^} == TRUE && ${PG_SLAVE^^} == TRUE ]]; then
   echo "Both \$PG_MASTER and \$PG_SLAVE cannot be true"
@@ -156,10 +157,18 @@ if [[ ${BACKUPS^^} == TRUE ]] && [[ ! -z ${FULL_BACKUP_SCHEDULE}  ]] && [[ $(id 
   echo "Starting cron job scheduler" && crond
   echo "Database backups will be scheduled to run at ${FULL_BACKUP_SCHEDULE}. Check https://crontab.guru/ for schedule expression details"
   backup_cron_schedule
-  if [[ ! -z ${CRONITOR_KEY} ]]; then
+  if [[ -n ${CRONITOR_KEY} ]]; then
+    CRONITOR_KEY=$(cat "${CRONITOR_KEY_FILE}")
+    NEW_JOB_NAME="${POSTGRES_DB}-DB-FullBackup-${CRONITOR_ENV}"
+    for JOB_NAME in $(curl https://cronitor.io/api/monitors -u ${CRONITOR_KEY}:| jq -r '.monitors | .[].name')
+    do
+      if [ $JOB_NAME == $NEW_JOB_NAME ]; then
+        curl -X DELETE https://cronitor.io/api/monitors/$JOB_NAME -u ${CRONITOR_KEY}:
+      fi
+    done
     echo "Configuring cronitor. Check https://cronitor.io/cron-job-monitoring to see jobs monitoring"
     cronitor configure --api-key ${CRONITOR_KEY} > /dev/null
-    yes "${POSTGRES_DB} DB Full Backup" | cronitor discover
+    yes $NEW_JOB_NAME | cronitor discover
   fi
 fi
 
