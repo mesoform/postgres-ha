@@ -51,7 +51,7 @@ and to setup database full backups schedules and job monitoring:
       - FULL_BACKUP_SCHEDULE=* * * * *                          # to specify the cron schedule expression at which backups will run (if not set only the first initial base backup will be ran) \
                                                                 # L-> check https://crontab.guru/ for schedule expression details. (e.g.: 00 00 * * * -> to run a daily backup at midnight)"
       - CRONITOR_KEY_FILE=/run/secrets/cronitor_key             # to specify the docker secret with the cronitor API key for cron job monitoring. check https://cronitor.io/cron-job-monitoring for details   
-      - CRONITOR_ENV="PROD"                                     # to specify the environment to be added as suffix to the cronitor job name (e.g.: "PROD", "DEV", "BETA"); defaults to "PROD" if not set
+      - CRONITOR_ENV=PROD                                       # to specify the environment to be added as suffix to the cronitor job name (e.g.: PROD, DEV, BETA, TEST); defaults to PROD if not set
 
 Note: HA MASTER instances with BACKUPS disabled will only store WAL logs locally on the `pg_wal` folder under the PGDATA directory path. 
 Running a postgres HA cluster without implementing backups is not recommended and is intended only for testing purposes.
