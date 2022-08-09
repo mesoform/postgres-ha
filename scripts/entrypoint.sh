@@ -157,7 +157,7 @@ if [[ ${BACKUPS^^} == TRUE ]] && [[ ! -z ${FULL_BACKUP_SCHEDULE}  ]] && [[ $(id 
   echo "Starting cron job scheduler" && crond
   echo "Database backups will be scheduled to run at ${FULL_BACKUP_SCHEDULE}. Check https://crontab.guru/ for schedule expression details"
   backup_cron_schedule
-  if [[ -n ${CRONITOR_KEY} ]]; then
+  if [[ -n ${CRONITOR_KEY_FILE} ]]; then
     CRONITOR_KEY=$(cat "${CRONITOR_KEY_FILE}")
     NEW_JOB_NAME="${POSTGRES_DB}-DB-FullBackup-${CRONITOR_ENV}"
     for JOB_NAME in $(curl https://cronitor.io/api/monitors -u ${CRONITOR_KEY}:| jq -r '.monitors | .[].name')
