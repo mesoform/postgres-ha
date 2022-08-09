@@ -17,7 +17,7 @@ RUN set -ex  \
 
 FROM postgres:14.2-alpine3.15
 
-RUN apk add --update iputils htop curl busybox-suid \
+RUN apk add --update iputils htop curl busybox-suid jq \
     && curl -sOL https://cronitor.io/dl/linux_amd64.tar.gz \
     && tar xvf linux_amd64.tar.gz -C /usr/bin/
 
