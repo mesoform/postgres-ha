@@ -160,7 +160,7 @@ services:
       interval: 3800s
       timeout: 60s
       retries: 3
-      start_period: 60s 
+      start_period: 60s
 
 networks:
   database: {}
