@@ -6,6 +6,8 @@ secrets:
     external: true
   gcp_credentials:
     external: true
+  cronitor_key:
+    external: true
 
 services:
   pg_master:
@@ -26,6 +28,7 @@ services:
       - STORAGE_BUCKET=gs://postgresql/backups
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials
       - FULL_BACKUP_SCHEDULE=00 00 * * *
+      - CRONITOR_KEY=/run/secrets/cronitor_key
     ports:
       - "5432:5432"
     secrets:
@@ -38,6 +41,10 @@ services:
         gid: "70"
         mode: 0550
       - source: gcp_credentials
+        uid: "70"
+        gid: "70"
+        mode: 0550
+      - source: cronitor_key
         uid: "70"
         gid: "70"
         mode: 0550
