@@ -45,9 +45,13 @@ To run backups and WAL archiving to GCS (Google Cloud Storage) set the following
       - BACKUPS=true                                            # switch to implement backups; defaults to false
       - STORAGE_BUCKET=gs://postgresql/backups                  # to specify the GCS bucket
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials            # to specify the docker secret with the service account key that has access to the GCS bucket
+
+and to setup database full backups schedules and job monitoring:
+
       - FULL_BACKUP_SCHEDULE=* * * * *                          # to specify the cron schedule expression at which backups will run (if not set only the first initial base backup will be ran) \
                                                                 # L-> check https://crontab.guru/ for schedule expression details. (e.g.: 00 00 * * * -> to run a daily backup at midnight)"
-      - CRONITOR_KEY=1a2b3cd4e56789f1234gh5ijkl67m890           # to specify cronitor API key for cron job monitoring. check https://cronitor.io/cron-job-monitoring for details   
+      - CRONITOR_KEY_FILE=/run/secrets/cronitor_key             # to specify the docker secret with the cronitor API key for cron job monitoring. check https://cronitor.io/cron-job-monitoring for details   
+      - CRONITOR_ENV=PROD                                       # to specify the environment to be added as suffix to the cronitor job name (e.g.: PROD, DEV, BETA, TEST); defaults to PROD if not set
 
 Note: HA MASTER instances with BACKUPS disabled will only store WAL logs locally on the `pg_wal` folder under the PGDATA directory path. 
 Running a postgres HA cluster without implementing backups is not recommended and is intended only for testing purposes.
@@ -85,6 +89,8 @@ services:
       - STORAGE_BUCKET=gs://postgresql/backups
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials
       - FULL_BACKUP_SCHEDULE:00 00 * * *
+      - CRONITOR_KEY_FILE=/run/secrets/cronitor_key
+      - CRONITOR_ENV=TEST
     ports:
       - "5432:5432"
     secrets:
@@ -100,6 +106,10 @@ services:
         uid: "70"
         gid: "70"
         mode: 0550
+      - source: cronitor_key
+        uid: "70"
+        gid: "70"
+        mode: 0550        
     networks:
       database:
         aliases:
