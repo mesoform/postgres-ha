@@ -72,7 +72,7 @@ secrets:
 
 services:
   pg_master:
-    image: mesoform/postgres-ha:13-latest
+    image: mesoform/postgres-ha:14-latest
     volumes:
       - pg_data:/var/lib/postgresql/data
     environment:
@@ -125,7 +125,7 @@ services:
       retries: 3
       start_period: 60s        
   pg_replica:
-    image: mesoform/postgres-ha:13-latest
+    image: mesoform/postgres-ha:14-latest
     volumes:
       - pg_replica:/var/lib/postgresql/data
     environment:
@@ -210,7 +210,7 @@ secrets:
 
 services:
   pg_master:
-    image: mesoform/postgres-ha:13-latest
+    image: mesoform/postgres-ha:14-latest
     volumes:
       - pg_data:/var/lib/postgresql/data
     environment:
@@ -257,7 +257,7 @@ services:
       retries: 3
       start_period: 60s        
   pg_replica:
-    image: mesoform/postgres-ha:13-latest
+    image: mesoform/postgres-ha:14-latest
     volumes:
       - pg_replica:/var/lib/postgresql/data
     environment:
@@ -364,7 +364,7 @@ networks:
 
 services:
   pg13:
-    image: mesoform/postgres-ha:13-latest
+    image: mesoform/postgres-ha:14-latest
     volumes:
       - pg13_data:/var/lib/postgresql/data
     environment:
@@ -469,7 +469,7 @@ services:
         constraints:
           - node.labels.storage == primary
   db:
-    image: mesoform/postgres-ha:13-latest
+    image: mesoform/postgres-ha:14-latest
     volumes:
       - db_data:/var/lib/postgresql/data
     environment:
@@ -493,7 +493,7 @@ services:
         constraints:
           - node.labels.storage == primary
   db_replica:
-    image: mesoform/postgres-ha:13-latest
+    image: mesoform/postgres-ha:14-latest
     volumes:
       - db_replica_data:/var/lib/postgresql/data
     environment:
@@ -523,8 +523,8 @@ docker stack deploy -c docker-compose.yml testapp
 ```
 root@testapp:~$ sudo docker stack ps testapp
 ID                  NAME                   IMAGE                                                          NODE                DESIRED STATE       CURRENT STATE          ERROR               PORTS                       
-wklerj2344jd        testapp_db_replica.1   mesoform/postgres-ha:13-latest                                 secondary           Running             Running 2 minutes ago                       
-lclkerk34kl3        testapp_db.1           mesoform/postgres-ha:13-latest                                 primary             Running             Running 2 minutes ago                       
+wklerj2344jd        testapp_db_replica.1   mesoform/postgres-ha:14-latest                                 secondary           Running             Running 2 minutes ago                       
+lclkerk34kl3        testapp_db.1           mesoform/postgres-ha:14-latest                                 primary             Running             Running 2 minutes ago                       
 mfdk34jll34k        testapp_app.1          testapp/testapp-prod:1.0.0                                     primary             Running             Running 2 minutes ago  
 ```
 
