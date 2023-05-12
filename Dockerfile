@@ -1,6 +1,6 @@
-FROM golang:1.15-alpine AS builder
+FROM golang:1.18-alpine AS builder
 
-ENV WALG_VERSION=v0.2.19
+ENV WALG_VERSION=v1.1
 
 ENV _build_deps="wget cmake git build-base bash"
 
