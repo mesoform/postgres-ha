@@ -11,7 +11,7 @@ secrets:
 
 services:
   pg_master:
-    image: mesoform/postgres-ha:13-latest
+    image: mesoform/postgres-ha:14-latest
     volumes:
       - pg_data:/var/lib/postgresql/data
     environment:
@@ -57,7 +57,7 @@ services:
         constraints:
         - node.labels.type == primary
   pg_replica:
-    image: mesoform/postgres-ha:13-latest
+    image: mesoform/postgres-ha:14-latest
     volumes:
       - pg_replica:/var/lib/postgresql/data
     environment:

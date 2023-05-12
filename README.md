@@ -4,7 +4,7 @@
 Postgres database image setup for HA replication with control over backups and WAL archiving to GCS and backup restoration functionality.
 
 ## Semantic versioning 
-The way in which versioning is done in this repository and for the image labels which it creates is a little different to standard versioning format. The normal major and minor versions that you would expect are still major and minor versions but they are tracking the major and minor versions of Postgres upstream. The second part of the version system also is broken into two parts, again major and minor versions. These represent major and minor versions of the additional features added by Mesoform. You can expect them to behave in the normal way of major and minor versions, in that major versions could include breaking changes. For example `13.1-1.1` represents Postgres version 13.1 with Mesoform features version 1.1
+The way in which versioning is done in this repository and for the image labels which it creates is a little different to standard versioning format. The normal major and minor versions that you would expect are still major and minor versions but they are tracking the major and minor versions of Postgres upstream. The second part of the version system also is broken into two parts, again major and minor versions. These represent major and minor versions of the additional features added by Mesoform. You can expect them to behave in the normal way of major and minor versions, in that major versions could include breaking changes. For example `14.4-3.0` represents Postgres version 14.4 with Mesoform features version 3.0
 
 ## How to use
 Variables usage:
@@ -72,7 +72,7 @@ secrets:
 
 services:
   pg_master:
-    image: mesoform/postgres-ha:13-latest
+    image: mesoform/postgres-ha:14-latest
     volumes:
       - pg_data:/var/lib/postgresql/data
     environment:
@@ -125,7 +125,7 @@ services:
       retries: 3
       start_period: 60s        
   pg_replica:
-    image: mesoform/postgres-ha:13-latest
+    image: mesoform/postgres-ha:14-latest
     volumes:
       - pg_replica:/var/lib/postgresql/data
     environment:
@@ -173,8 +173,10 @@ volumes:
 Run with:
 
 ```shell script
-docker stack deploy -c docker-compose-example.yml test_pg13ha
+docker stack deploy -c docker-compose-example.yml test_pg14ha
 ```
+
+Remember that docker secrets and storage bucket need to exist beforehand.
 
 Note: Healthchecks can be added as in the example to avoid processes like backup restoration or database replication from being terminated too early before they complete
 
@@ -210,7 +212,7 @@ secrets:
 
 services:
   pg_master:
-    image: mesoform/postgres-ha:13-latest
+    image: mesoform/postgres-ha:14-latest
     volumes:
       - pg_data:/var/lib/postgresql/data
     environment:
@@ -257,7 +259,7 @@ services:
       retries: 3
       start_period: 60s        
   pg_replica:
-    image: mesoform/postgres-ha:13-latest
+    image: mesoform/postgres-ha:14-latest
     volumes:
       - pg_replica:/var/lib/postgresql/data
     environment:
@@ -306,7 +308,7 @@ volumes:
 Run with:
 
 ```shell script
-docker stack deploy -c docker-compose-restore.yml restore_pg13
+docker stack deploy -c docker-compose-restore.yml restore_pg14
 ```
 Master database container logs:
 ```
@@ -344,15 +346,15 @@ Stop the database to be upgraded and take a consistent copy of the data volume w
 root@testapp:~# docker exec -it ab1cdef23g4h pg_dumpall -U testuser > /backups/dump-testapp_db_data.sql
 ```
 
-2) Deploy a new PostgreSQL v13 database (with the same database name and username) on an empty volume which will be used to import the data dump taken on the database to be upgraded:
+2) Deploy a new PostgreSQL v14 database (with the same database name and username) on an empty volume which will be used to import the data dump taken on the database to be upgraded:
 
 ```
-root@testapp:~/testapp$ cat docker-compose.pg13.yml 
+root@testapp:~/testapp$ cat docker-compose.pg14.yml 
 version: "3.7"
 
 volumes:
-  pg13_data:
-    name: zones/volumes/pg13_data
+  pg14_data:
+    name: zones/volumes/pg14_data
     driver: zfs
 secrets:
   db_password:
@@ -363,10 +365,10 @@ networks:
   database: {}
 
 services:
-  pg13:
-    image: mesoform/postgres-ha:13-latest
+  pg14:
+    image: mesoform/postgres-ha:14-latest
     volumes:
-      - pg13_data:/var/lib/postgresql/data
+      - pg14_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=testdb
       - POSTGRES_USER=testuser
@@ -374,7 +376,7 @@ services:
       - POSTGRES_PASSWORD_FILE=/run/secrets/db_password 
       - HBA_ADDRESS=10.0.0.0/8
       - BACKUPS=true
-      - STORAGE_BUCKET=gs://backups/postgres/testdb
+      - STORAGE_BUCKET=gs://postgresql/backups/testdb
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials
     secrets:    
       - source: db_password
@@ -385,7 +387,7 @@ services:
           - node.labels.storage == primary
 ```
 ```
-root@testapp:~# docker stack deploy -c docker-compose.pg13.yml pg13db
+root@testapp:~# docker stack deploy -c docker-compose.pg14.yml pg14db
 ```
 
 3) Import the data dump taken on the first step to the new database:
@@ -420,13 +422,13 @@ root@testapp:~# docker stack rm testapp
 root@testapp:~# rm -rf /volumes/testapp_db_data
 ```
 
-6) Move upgraded data volume from the PostgreSQL v13 database to the old database data volume:
+6) Move upgraded data volume from the PostgreSQL v14 database to the old database data volume:
 
 ```
-root@testapp:~# mv -v /volumes/testapp_db13_data /volumes/testapp_db_data/
+root@testapp:~# mv -v /volumes/testapp_db14_data /volumes/testapp_db_data/
 ```
 
-7) Edit the original `docker-compose` file to update the database postgres image to v13 and gcp parameters to backup to cloud storage:
+7) Edit the original `docker-compose` file to update the database postgres image to v14 and gcp parameters to backup to cloud storage:
 
 ```
 root@testapp:~/testapp$ cat docker-compose.yml
@@ -469,7 +471,7 @@ services:
         constraints:
           - node.labels.storage == primary
   db:
-    image: mesoform/postgres-ha:13-latest
+    image: mesoform/postgres-ha:14-latest
     volumes:
       - db_data:/var/lib/postgresql/data
     environment:
@@ -482,7 +484,7 @@ services:
       - PG_REP_PASSWORD_FILE=/run/secrets/testapp_db_replica_password
       - HBA_ADDRESS=10.0.0.0/8
       - BACKUPS=true
-      - STORAGE_BUCKET=gs://backups/postgres/testapp
+      - STORAGE_BUCKET=gs://postgresql/backups/testapp
       - GCP_CREDENTIALS=/run/secrets/gcp_credentials
     secrets:
       - testapp_db_password
@@ -493,7 +495,7 @@ services:
         constraints:
           - node.labels.storage == primary
   db_replica:
-    image: mesoform/postgres-ha:13-latest
+    image: mesoform/postgres-ha:14-latest
     volumes:
       - db_replica_data:/var/lib/postgresql/data
     environment:
@@ -523,8 +525,8 @@ docker stack deploy -c docker-compose.yml testapp
 ```
 root@testapp:~$ sudo docker stack ps testapp
 ID                  NAME                   IMAGE                                                          NODE                DESIRED STATE       CURRENT STATE          ERROR               PORTS                       
-wklerj2344jd        testapp_db_replica.1   mesoform/postgres-ha:13-latest                                 secondary           Running             Running 2 minutes ago                       
-lclkerk34kl3        testapp_db.1           mesoform/postgres-ha:13-latest                                 primary             Running             Running 2 minutes ago                       
+wklerj2344jd        testapp_db_replica.1   mesoform/postgres-ha:14-latest                                 secondary           Running             Running 2 minutes ago                       
+lclkerk34kl3        testapp_db.1           mesoform/postgres-ha:14-latest                                 primary             Running             Running 2 minutes ago                       
 mfdk34jll34k        testapp_app.1          testapp/testapp-prod:1.0.0                                     primary             Running             Running 2 minutes ago  
 ```
 
