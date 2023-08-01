@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine AS builder
+FROM golang:1.20-alpine AS builder
 
 ENV WALG_VERSION=v1.1
 
@@ -15,7 +15,7 @@ RUN set -ex  \
      && install main/pg/wal-g / \
      && /wal-g --help
 
-FROM postgres:14.6-alpine3.16
+FROM postgres:14.8-alpine3.18
 
 RUN apk add --update iputils htop curl busybox-suid jq \
     && curl -sOL https://cronitor.io/dl/linux_amd64.tar.gz \
