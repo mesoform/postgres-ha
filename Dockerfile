@@ -15,7 +15,7 @@ RUN set -ex  \
      && install main/pg/wal-g / \
      && /wal-g --help
 
-FROM postgres:14.10-alpine3.18
+FROM postgres:14.11-alpine3.18
 
 RUN apk add --update iputils htop curl busybox-suid jq \
     && curl -sOL https://cronitor.io/dl/linux_amd64.tar.gz \
