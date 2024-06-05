@@ -38,6 +38,6 @@ jobs:
           context: .
           push: true
           tags: |
-            my-dockerhub-username/my-image:release-${{ env.VERSION }}
-            my-dockerhub-username/my-image:release-${{ env.MAJOR_MINOR }}
-            my-dockerhub-username/my-image:${{ env.MAJOR }}-latest
+            mesoform/postgres-ha:release-${{ env.VERSION }}
+            mesoform/postgres-ha:release-${{ env.MAJOR_MINOR }}
+            mesoform/postgres-ha:${{ env.MAJOR }}-latest
