@@ -9,6 +9,7 @@ RUN set -ex  \
      && git clone https://github.com/wal-g/wal-g/  $GOPATH/src/wal-g \
      && cd $GOPATH/src/wal-g/ \
      && git checkout $WALG_VERSION \
+     && go get -u golang.org/x/crypto@v0.36.0 \
      && make install \
      && make deps \
      && make pg_build \
