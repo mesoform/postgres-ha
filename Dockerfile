@@ -9,9 +9,6 @@ RUN set -ex  \
      && git clone https://github.com/wal-g/wal-g/  $GOPATH/src/wal-g \
      && cd $GOPATH/src/wal-g/ \
      && git checkout $WALG_VERSION \
-     # Update all dependencies safely
-     && go mod tidy \
-     && go mod download \
      # Resolves vulnerability CVE-2021-38561 - Out-of-bounds Read
      && go get golang.org/x/text@v0.3.7 \
      # Resolves vulnerabilities CVE-2023-44487, CVE-2021-44716, CVE-2022-41723 & CVE-2022-27664 - Denial of Service (DoS)
@@ -21,17 +18,16 @@ RUN set -ex  \
      && go get google.golang.org/grpc@v1.71.1 \
      # Resolves vulnerability CVE-2025-22868 - Allocation of Resources Without Limits or Throttling
      && go get golang.org/x/oauth2@v0.28.0 \
-     # Resolves vulnerability CVE-2024-27304 - SQL Injection
-     && go get github.com/jackc/pgproto3/v2@v2.3.3 \
-     # Resolves vulnerability CVE-2024-27304 - SQL Injection
-     && go get github.com/jackc/pgx/v5@v5.5.4 \
-     # Resolves vulnerability CVE-2020-26160 - Access Restriction Bypass
+     # Resolves vulnerability CVE-2024-27304 - SQL Injection \
      && go get github.com/dgrijalva/jwt-go/v4@v4.0.0-preview1 \
      # Resolves vulnerability CVE-2024-45337 - Incorrect Implementation of Authentication Algorithm
      # Resolves vulnerability CVE-2025-22869 - Allocation of Resources Without Limits or Throttling
      # Resolves vulnerability CVE-2020-29652 - NULL Pointer Dereference
      # Resolves vulnerability CVE-2021-43565 - Denial of Service (DoS)
      && go get -u golang.org/x/crypto@v0.35.0 \
+     # Update all dependencies safely
+     && go mod tidy \
+     && go mod download \
      && make install \
      && make deps \
      && make pg_build \
@@ -52,13 +48,13 @@ COPY --from=builder /wal-g /usr/local/bin
 RUN mkdir -p /usr/local/scripts
 COPY scripts/setup-master.sh /docker-entrypoint-initdb.d/
 COPY scripts/setup-slave.sh /docker-entrypoint-initdb.d/
-RUN chown -R root:postgres /docker-entrypoint-initdb.d/
+RUN chown -R root:postgres /docker-entrypoint-initdb.d/ \
     && chmod -R 775 /docker-entrypoint-initdb.d
 
 # Add WAL-G backup script
 COPY scripts/walg_caller.sh /usr/local/scripts/
 COPY scripts/base_backup.sh /usr/local/scripts/
-RUN chown -R root:postgres /usr/local/scripts
+RUN chown -R root:postgres /usr/local/scripts \
     && chmod -R 775 /usr/local/scripts
 
 # Add custom entrypoint
