@@ -34,12 +34,16 @@ RUN set -ex  \
      && install main/pg/wal-g / \
      && /wal-g --help
 
-FROM postgres:14.17-alpine3.21
+FROM postgres:14.18-alpine3.21
+
+# Upgrade vulnerable libxml2 package
+RUN apk upgrade --no-cache libxml2
 
 RUN apk add --update iputils htop curl busybox-suid jq \
     && curl -sOL https://cronitor.io/dl/linux_amd64.tar.gz \
     && tar xvf linux_amd64.tar.gz -C /usr/bin/ \
-    && apk upgrade --no-cache
+    && apk upgrade --no-cache libxml2 \
+    && apk info -v libxml2
 
 # Copy compiled wal-g binary from builder
 COPY --from=builder /wal-g /usr/local/bin
