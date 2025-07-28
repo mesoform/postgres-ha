@@ -36,8 +36,8 @@ RUN set -ex  \
 
 FROM postgres:14.18-alpine3.21
 
-# Upgrade vulnerable libxml2 package
-RUN apk upgrade --no-cache libxml2
+# Upgrade vulnerable packages libxml2 - icu-data-full - icu-libs
+RUN apk upgrade --no-cache libxml2 icu-data-full icu-libs
 
 RUN apk add --update iputils htop curl busybox-suid jq \
     && curl -sOL https://cronitor.io/dl/linux_amd64.tar.gz \
