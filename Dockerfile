@@ -36,14 +36,13 @@ RUN set -ex  \
 
 FROM postgres:14.18-alpine3.21
 
-# Upgrade vulnerable packages libxml2 - icu-data-full - icu-libs
-RUN apk upgrade --no-cache libxml2 icu-data-full icu-libs
+# Upgrade vulnerable packages libxml2, libxslt, icu-data-full and icu-libs
+RUN apk upgrade --no-cache libxml2 libxslt icu-data-full icu-libs
 
 RUN apk add --update iputils htop curl busybox-suid jq \
     && curl -sOL https://cronitor.io/dl/linux_amd64.tar.gz \
     && tar xvf linux_amd64.tar.gz -C /usr/bin/ \
-    && apk upgrade --no-cache libxml2 \
-    && apk info -v libxml2
+    && rm linux_amd64.tar.gz
 
 # Copy compiled wal-g binary from builder
 COPY --from=builder /wal-g /usr/local/bin
