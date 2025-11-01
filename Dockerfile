@@ -34,7 +34,7 @@ RUN set -ex  \
      && install main/pg/wal-g / \
      && /wal-g --help
 
-FROM postgres:14.18-alpine3.21
+FROM postgres:14.19-alpine3.21
 
 # Upgrade vulnerable packages libxml2, libxslt, icu-data-full and icu-libs
 RUN apk upgrade --no-cache libxml2 libxslt icu-data-full icu-libs
