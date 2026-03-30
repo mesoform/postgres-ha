@@ -1,6 +1,10 @@
+# -----------------------------
+# Builder stage
+# -----------------------------
 FROM golang:1.22-alpine AS builder
 
 ENV WALG_VERSION=v1.1
+ENV GOPATH=/go
 
 RUN set -eux; \
     apk add --no-cache \
@@ -8,15 +12,21 @@ RUN set -eux; \
         make \
         bash \
         build-base \
-        cmake; \
-    \
-    git clone https://github.com/wal-g/wal-g.git /go/src/wal-g; \
-    cd /go/src/wal-g; \
+        cmake
+
+# Fetch WAL-G source
+RUN git clone https://github.com/wal-g/wal-g.git $GOPATH/src/wal-g
+
+WORKDIR $GOPATH/src/wal-g
+
+RUN set -eux; \
     git checkout $WALG_VERSION; \
     \
+    # Deterministic dependency resolution (modern Go approach)
     go mod download; \
     go mod tidy; \
     \
+    # Build WAL-G
     make install; \
     make deps; \
     make pg_build; \
@@ -24,28 +34,29 @@ RUN set -eux; \
     install main/pg/wal-g /wal-g; \
     /wal-g --help
 
+
 # -----------------------------
-# Runtime image (Postgres base)
+# Runtime stage (Postgres)
 # -----------------------------
 FROM postgres:14.22-alpine3.23
 
-# Fix CVEs in base Alpine packages where applicable
+# Security: apply OS-level fixes only (not Go-level hacks)
 RUN apk upgrade --no-cache
 
-# Install runtime tools
+# Minimal runtime tools (keep attack surface small)
 RUN apk add --no-cache \
     iputils \
-    htop \
     curl \
+    jq \
     busybox-suid \
-    jq
+    htop
 
-# Install cronitor
+# Install cronitor (pinned external binary source)
 RUN curl -sSL https://cronitor.io/dl/linux_amd64.tar.gz -o /tmp/cronitor.tar.gz \
     && tar xvf /tmp/cronitor.tar.gz -C /usr/bin/ \
     && rm -f /tmp/cronitor.tar.gz
 
-# Copy wal-g binary
+# WAL-G binary
 COPY --from=builder /wal-g /usr/local/bin/wal-g
 
 # -----------------------------
@@ -71,7 +82,7 @@ RUN chown -R root:postgres /usr/local/scripts \
 COPY scripts/entrypoint.sh /
 RUN chmod +x /entrypoint.sh
 
-# Fix cron permissions
+# Cron permissions
 RUN chown -R root:postgres /etc/crontabs/root \
     && chmod g+rw /etc/crontabs/root
 
