@@ -22,6 +22,9 @@ WORKDIR $GOPATH/src/wal-g
 RUN set -eux; \
     git checkout $WALG_VERSION; \
     \
+    # Patch vulnerable packages
+    go get golang.org/x/net@v0.54.0; \
+    \
     # Deterministic dependency resolution (modern Go approach)
     go mod download; \
     go mod tidy; \
