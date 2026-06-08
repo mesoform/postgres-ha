@@ -1,7 +1,7 @@
 # -----------------------------
 # Builder stage
 # -----------------------------
-FROM golang:1.22-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 ENV WALG_VERSION=v1.1
 ENV GOPATH=/go
@@ -13,6 +13,17 @@ RUN set -eux; \
         bash \
         build-base \
         cmake
+
+
+# Create a cmake wrapper to force compatibility with WAL-G's Brotli submodule
+RUN mv /usr/bin/cmake /usr/bin/cmake-orig \
+    && echo '#!/bin/sh' > /usr/bin/cmake \
+    && echo 'if [ "$1" = "-E" ]; then' >> /usr/bin/cmake \
+    && echo '  exec /usr/bin/cmake-orig "$@"' >> /usr/bin/cmake \
+    && echo 'else' >> /usr/bin/cmake \
+    && echo '  exec /usr/bin/cmake-orig -DCMAKE_POLICY_VERSION_MINIMUM=3.5 "$@"' >> /usr/bin/cmake \
+    && echo 'fi' >> /usr/bin/cmake \
+    && chmod +x /usr/bin/cmake
 
 # Fetch WAL-G source
 RUN git clone https://github.com/wal-g/wal-g.git $GOPATH/src/wal-g
