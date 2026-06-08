@@ -48,6 +48,8 @@ RUN apk upgrade --no-cache
 
 # Minimal runtime tools (keep attack surface small)
 RUN apk add --no-cache \
+    "libssl3>=3.5.6-r0" \
+    "libcrypto3>=3.5.6-r0" \
     iputils \
     curl \
     jq \
